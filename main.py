@@ -68,10 +68,10 @@ class DropTarget(Widget):
         print(f"Zipped {file_path} to {zipped_path}")
         self._notarize_file(zipped_path)
     
-    def _notarize_file(self, file_path):
+    def _notarize_file(self, zip_path):
         global label, log
         Clock.schedule_once(lambda dt: self.update_label("Notarizing..."))
-        command = f"xcrun notarytool submit --keychain-profile {keychain_profile.text} --wait \"{file_path}\""
+        command = f"xcrun notarytool submit --keychain-profile {keychain_profile.text} --wait \"{zip_path}\""
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, text=True)
 
         valid = True  # Assume the process is valid to start
@@ -88,6 +88,10 @@ class DropTarget(Widget):
         process.stdout.close()
         return_code = process.wait()
 
+        # remove the temp zip used for notarization
+        if os.path.exists(zip_path):
+            os.remove(zip_path)
+            
         if return_code != 0:
             Clock.schedule_once(lambda dt: self.update_label("Notarization failed"))
             Clock.schedule_once(lambda dt: self.update_log(result))
@@ -98,12 +102,12 @@ class DropTarget(Widget):
             Clock.schedule_once(lambda dt: self.update_log(result))
         else:
             print(f"Notarization was successful! Submission ID: {submission_id}")
-            self._staple_file(file_path)
+            self._staple_file(zip_path.replace(".zip", ""))
 
     def _staple_file(self, file_path):
         global label, log
         Clock.schedule_once(lambda dt: self.update_label("Stapling:"))
-        file_path = file_path.replace(".zip", "")
+        file_path = file_path
         command = f"xcrun stapler staple \"{file_path}\""
         result = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True, text=True).strip()
         Clock.schedule_once(lambda dt: self.update_label("Result:"))
