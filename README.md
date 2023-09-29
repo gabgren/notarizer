@@ -1,3 +1,5 @@
+<img width="804" alt="Screenshot 2023-09-28 at 10 14 59 PM" src="https://github.com/gabgren/notarizer/assets/1724721/505ede5c-24c4-48f4-91c7-1fa1172583f2">
+
 # Notatizer
 
 Simple tool to notarize a software by drag and drop
