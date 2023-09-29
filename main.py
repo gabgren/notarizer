@@ -48,7 +48,7 @@ class DropTarget(Widget):
         file_path = file_path.decode('utf-8')
         print("File dropped: " + file_path)
         threading.Thread(target=self._zip_file, args=(file_path,)).start()
-
+            
     def _zip_file(self, file_path):
         global label
         with open(keychain_profile_save, "w") as f:
@@ -58,8 +58,13 @@ class DropTarget(Widget):
         # remove zip if it already exists
         if os.path.exists(zipped_path):
             os.remove(zipped_path)
-        # zip the app
-        zip_directory(file_path, zipped_path)
+        # zip the app folder
+        if os.path.isdir(file_path):
+            zip_directory(file_path, zipped_path)
+        else:
+            # or zip the single file
+            with zipfile.ZipFile(zipped_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                zipf.write(file_path)
         print(f"Zipped {file_path} to {zipped_path}")
         self._notarize_file(zipped_path)
     
